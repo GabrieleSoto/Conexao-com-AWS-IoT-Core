@@ -1,2 +1,2 @@
-Demonstrativo da conexão feita: [Link](https://youtu.be/mbjdW6KSdT4?si=lCP46oB0Glm_B7Bb)
-Demonstrativo do armazenamento feito: [Link](https://youtu.be/RtMlcyibAII?si=WvwhgtaZf2TZN9Il)
+Demonstrativo da conexão feita: [Link](https://www.youtube.com/watch?v=jGj6akH_bYs)
+Demonstrativo do armazenamento feito: [Link](https://www.youtube.com/watch?v=HwH-WNGATi0)
