@@ -3,8 +3,8 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "WiFi.h"
- 
 #include "DHT.h"
+
 #define DHTPIN 14     // PIN digital conectado ao sensor
 #define DHTTYPE DHT11   // DHT 11
  
