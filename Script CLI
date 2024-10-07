@@ -1,0 +1,121 @@
+• Criar thing:
+aws iot create-thing --thing-name NomeDaThing
+
+• Criar certificado:
+aws iot create-keys-and-certificate --set-as-active
+--output json > certs.json
+
+• Extrair informações do certificado:
+powershell -Command "((Get-Content certs.json |
+ConvertFrom-Json).certificateArn)" > cert_arn.txt &&
+powershell -Command "((Get-Content certs.json |
+ConvertFrom-Json).certificateId)" > cert_id.txt && set
+/p CERTIFICATE_ARN=<cert_arn.txt && set /p
+CERTIFICATE_ID=<cert_id.txt
+
+• Associar o certificado à thing:
+aws iot attach-thing-principal --thing-name
+NomeDaThing --principal %CERTIFICATE_ARN%
+
+• Criar a política:
+aws iot create-policy --policy-name NomeDaSuaPolicy
+--policy-document {"Ver-sion": "2012-10-17",
+"Statement": [{"Effect": "Allow", "Action":
+"iot:Connect", "Resource": "arn:aws:iot:sa-east-
+1:xxxxxxxxxxxx:client/NomeDaThing"}, {"Effect": "Allow",
+"Action": "iot:Publish", "Resource": "arn:aws:iot:saeast-
+1:xxxxxxxxxxxx:topic/replacewithatopic"},
+{"Effect": "Allow", "Action": "iot:Subscribe",
+"Resource": "arn:aws:iot:sa-east-
+1:xxxxxxxxxxxx:topic/replacewithatopicfilter"},
+{"Effect": "Allow", "Action": "iot:Receive", "Resource":
+"arn:aws:iot:sa-east-1:xxxxxxxxxxxx:topic/
+replacewithatopic"}]}
+
+• Anexar a política ao certificado:
+aws iot attach-policy --policy-name NomeDaSuaPolicy
+--target %CERTIFICATE_ARN%
+
+• Criar bucket:
+aws s3api create-bucket --BucketName --region
+us-east-1/BucketName
+
+• Criar a Função IAM com a Política de Confiança:
+aws iam create-role --role-name RoleName --assume-rolepolicy-
+document "{\"Version\": \"2012-10-17\",
+\"Statement\": [{\"Effect\": \"Allow\", \"Principal\":
+{\"Service\": \"firehose.amazonaws.com\"}, \"Action\":
+\"sts:AssumeRole\"}]}"
+
+• Criar a Política de Permissões para o Kinesis Firehose:
+aws iam create-policy --policy-name RoleNamePolicy --
+policy-document "{\"Version\": \"2012-10-17\",
+\"Statement\": [{\"Effect\": \"Allow\", \"Action\":
+[\"s3:PutObject\", \"s3:GetBucketLocation\",
+\"s3:ListBucket\", \"s3:GetObject\"], \"Resource\":
+[\"arn:aws:s3:::BucketName\",
+\"arn:aws:s3:::BucketName/*\"]}, {\"Effect\":
+\"Allow\", \"Action\": [\"firehose:PutRecord\",
+\"firehose:PutRecordBatch\"], \"Resource\":
+\"arn:aws:firehose:us-east-
+1:xxxxxxxxxxxx:deliverystream/StreamName\"}]}"
+
+• Anexar a Política de Permissões à Função IAM:
+aws iam attach-role-policy --role-name RoleName
+--policy-arn arn:aws:iam::xxxxxxxxxxxx:policy/
+RoleNamePolicy
+
+• Criar o Kinesis Firehose Delivery Stream:
+aws firehose create-delivery-stream --delivery-streamname
+StreamName --s3-destination-configuration "
+{\"RoleARN\":\"arn:aws:iam::xxxxxxxxxxxx:role
+/RoleName\", \"BucketARN\": \"arn:aws:s3:::BucketName\",
+\"Prefix\": \"prefixo/\", \"BufferingHints\":
+{\"SizeInMBs\": 1, \"IntervalInSeconds\": 120},
+\"CompressionFormat\": \"UNCOMPRESSED\"}"
+
+• Criar a Função IAM com a Política de Confiança:
+aws iam create-role --role-name RoleName2 --assume-rolepolicy-
+document "{\"Version\": \"2012-10-17\",
+\"Statement\": [{\"Effect\": \"Allow\", \"Principal\":
+{\"Service\": \"iot.amazonaws.com\"}, \"Action\":
+\"sts:AssumeRole\"}]}"
+
+• Criar a Política de Permissões:
+aws iam create-policy --policy-name RoleName2Policy --
+policy-document "{\"Version\": \"2012-10-17\",
+\"Statement\": [{\"Effect\": \"Allow\", \"Action\":
+[\"firehose:PutRecord\", \"firehose:PutRecordBatch\",
+\"s3:PutObject\", \"s3:GetBucketLocation\",
+\"s3:ListBucket\", \"s3:GetObject\"], \"Resource\":
+[\"arn:aws:firehose:us-east-1:xxxxxxxxxxxx:
+deliverystream/StreamName\", \"arn:aws:s3:::
+BucketName\", \"arn:aws:s3:::BucketName/*\"]}]}"
+
+• Anexar a Política de Permissões à Função IAM:
+aws iam attach-role-policy --role-name RoleName2 --
+policy-arn arn:aws:iam::xxxxxxxxxxxx:policy/
+RoleName2Policy
+
+• Criar a Regra no AWS IoT Core:
+aws iot create-topic-rule --rule-name "RuleName"
+--topic-rule-payload "{\"sql\": \"SELECT * FROM
+’replacewithatopic’\", \"description\": \"Descrição da
+regra\", \"actions\": [{\"firehose\": {\"roleArn\":
+\"arn:aws:iam::xxxxxxxxxxxx:role/RoleName2\",
+\"deliveryStreamName\": \"StreamName\"}}]}"
+
+
+
+
+
+• Publicar uma Mensagem de Teste no Tópico IoT:
+aws iot-data publish --topic replacewithatopic --payload
+"{\"teste\": \"valor\"}" --cli-binary-format raw-inbase64-
+out
+
+• Listar Objetos no Bucket S3:
+aws s3 ls s3://BucketName/prefixo/
+
+• Baixar um Arquivo Específico do S3:
+aws s3 cp s3://BucketName/prefixo/FileName
