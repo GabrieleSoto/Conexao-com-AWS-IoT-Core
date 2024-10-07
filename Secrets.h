@@ -3,8 +3,8 @@
 #define SECRET
 #define THINGNAME "ESP32_DHT11"                   //Altere
  
-const char WIFI_SSID[] = "*******";               //Altere
-const char WIFI_PASSWORD[] = "*******";           //Altere
+const char WIFI_SSID[] = "******";               //Altere
+const char WIFI_PASSWORD[] = "******";           //Altere
 const char AWS_IOT_ENDPOINT[] = "a1aiuw2dr7jka2-ats.iot.sa-east-1.amazonaws.com";       //Altere
  
 // Amazon Root CA 1                                              //Altere
